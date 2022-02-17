@@ -6,7 +6,7 @@ from flight_data import FlightData
 class FlightSearch:
     def __init__(self):
         self.url = 'https://tequila-api.kiwi.com'
-        self.api_key = 'key_example'
+        self.api_key = 'example'
         self.headers = {'apikey': self.api_key}
 
     def get_destination_code(self, city_name):

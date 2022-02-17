@@ -12,9 +12,11 @@ data_manager = DataManager()
 flight_search = FlightSearch()
 notification_manager = NotificationManager()
 
+data_manager.add_new_user()
+
 tomorrow = datetime.now() + timedelta(days=1)
 six_month_from_today = datetime.now() + timedelta(days=(6 * 30))
-sheet_data = data_manager.read_table()
+sheet_data = data_manager.read_table('cities')
 
 for index, country_data in enumerate(sheet_data[1:]):
     row = index + 2
@@ -24,9 +26,16 @@ for index, country_data in enumerate(sheet_data[1:]):
     data_manager.write_country_code(row, city_code)
 
     ticket = flight_search.check_flights(ORIGIN_CITY_IATA, city_code, tomorrow, six_month_from_today)
-    if ticket:
-        if int(min_price) > ticket.price:
-            sms = f'Low price alert! Only ${ticket.price} to fly from {ticket.origin_city}-{ticket.origin_airport}' \
+
+    if ticket is None:
+        continue
+
+    if int(min_price) > ticket.price:
+        title = 'Low price alert!'
+        message = f'Only ${ticket.price} to fly from {ticket.origin_city}-{ticket.origin_airport}' \
                   f' to {ticket.destination_city}-{ticket.destination_airport}, from {ticket.out_date}' \
                   f' to {ticket.return_date}.'
-            notification_manager.send_sms(sms)
+        notification_manager.send_sms(f'{title} {message}')
+        emails_list = [email[2] for email in data_manager.read_table('users')[1:]]
+        notification_manager.send_emails(emails_list, message)
+
